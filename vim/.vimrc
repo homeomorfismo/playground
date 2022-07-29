@@ -1,7 +1,10 @@
-filetype on
+set nocompatible
+filetype off
 filetype plugin on 
 filetype indent on
 syntax on
+
+set cursorline
 
 set number
 set shiftwidth=4
@@ -20,12 +23,15 @@ set wildignore=*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx
 
 " Pluggins "
 
-call plug#begin('~/.vim/plugged')
-
-Plug 'tpope/vim-surround'
-Plug 'preservim/nerdtree'
-Plug 'vim-syntastic/syntastic'
-Plug 'vim-airline/vim-airline'
-Plug 'ycm-core/YouCompleteMe'
-
-call plug#end()
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'VundleVim/Vundle.vim'
+" call plug#begin('~/.vim/plugged')
+Plugin 'tpope/vim-surround'
+Plugin 'preservim/nerdtree'
+Plugin 'vim-syntastic/syntastic'
+Plugin 'vim-airline/vim-airline'
+Plugin 'ycm-core/YouCompleteMe'
+" call plug#end()
+call vundle#end()            
+filetype plugin indent on   
