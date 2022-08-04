@@ -82,4 +82,38 @@ How to install all the softwares I need?
     - Check your `PATH` with `echo $PATH`. You can need to append `export PATH=/usr/local/cuda-11.7/bin${PATH:+:${PATH}}` to your `PATH`. Edit `~/.bashrc` file.
     - Pray. Move on.
 
-3. Install Firedrake. See [here](https://www.firedrakeproject.org/download.html).
+0. Install OpenMPI. See [here](https://www.open-mpi.org/faq/?category=building#easy-build).
+    - To install the most recent version of OpenMPI CUDA-aware requires the UCX software. See [here](https://github.com/openucx/ucx).
+    - Install UCX.
+        - Clone the repo. `git clone git@github.com:openucx/ucx.git`
+        - Change directory. Run 
+        ```
+        ./autogen.sh
+        ./contrib/configure-release --prefix=/where/to/install
+        make -j4
+        make install
+        ```
+        - Append the installation dir (see above `--prefix=`) to `PATH`.
+    - Download OpenMPI from the site. Untar with `gunzip -c openmpi-4.1.4.tar.gz | tar xf -`.
+    - Run `./configure --prefix=/usr/local --with-cuda=/usr/local/cuda --with-ucx=/path/to/ucx-cuda-install`.
+    - Do `make -j4 install`.
+
+
+5. Install Firedrake. See [here](https://www.firedrakeproject.org/download.html).
+
+    - I still need to check if I can use my own PETSc instead of the FIredrake version, despite the firedrake version uses the most recent PETSc.
+
+---
+
+## Tricks
+
+### Python envs
+    
+    - Install the python enviroments manager.
+    - Create a directory for managing the different enviroments. E.g., `$HOME/.local/env`.
+    - Create a python env with `venv`.
+    - *Optional.* Set up BASH alias in `.bashrc` with `alias your_fav_alias='source <path>/activate'`.
+    
+### Stack dirs
+
+    - Use `pushd` to push a dir in the `dirs` stack. Use `popd` to pop a dir from the stack. Use `cd -` to swap directory to the last visited directory.
