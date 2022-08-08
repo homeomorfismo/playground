@@ -105,15 +105,15 @@ How to install all the softwares I need?
 
 ---
 
-## Tricks
+# Tricks
 
-### Python envs
+## Python envs
     
     - Install the python enviroments manager.
     - Create a directory for managing the different enviroments. E.g., `$HOME/.local/env`.
     - Create a python env with `venv`.
     - *Optional.* Set up BASH alias in `.bashrc` with `alias your_fav_alias='source <path>/activate'`.
     
-### Stack dirs
+## Stack dirs
 
     - Use `pushd` to push a dir in the `dirs` stack. Use `popd` to pop a dir from the stack. Use `cd -` to swap directory to the last visited directory.
