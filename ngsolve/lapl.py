@@ -50,6 +50,10 @@ vecmap = n2p.VectorMapping(a.mat.row_pardofs, V.FreeDofs())
 
 psc_f, psc_u = psc_mat.createVecs()
 
+psc_mat.setType('aijcusparse')
+psc_f.setType('cuda')
+psc_u.setType('cuda')
+
 psc_f.setFromOptions()
 psc_u.setFromOptions()
 psc_mat.setFromOptions()

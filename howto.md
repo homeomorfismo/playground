@@ -79,7 +79,7 @@ How to install all the softwares I need?
     sudo apt-get -y install cuda
     ```
     - Install the GDS packages `sudo apt-get install nvidia-gds` and reboot.
-    - Check your `PATH` with `echo $PATH`. You can need to append `export PATH=/usr/local/cuda-11.7/bin${PATH:+:${PATH}}` to your `PATH`. Edit `~/.bashrc` file.
+    - Check your `PATH` with `echo $PATH`. You might need to append `export PATH=/usr/local/cuda-11.7/bin${PATH:+:${PATH}}` to your `PATH`. Edit `~/.bashrc` file.
     - Pray. Move on.
 
 0. Install OpenMPI. See [here](https://www.open-mpi.org/faq/?category=building#easy-build).
@@ -107,13 +107,15 @@ How to install all the softwares I need?
 
 # Tricks
 
-## Python envs
+1. Python envs
     
     - Install the python enviroments manager.
     - Create a directory for managing the different enviroments. E.g., `$HOME/.local/env`.
     - Create a python env with `venv`.
     - *Optional.* Set up BASH alias in `.bashrc` with `alias your_fav_alias='source <path>/activate'`.
     
-## Stack dirs
+2. Stack dirs
 
     - Use `pushd` to push a dir in the `dirs` stack. Use `popd` to pop a dir from the stack. Use `cd -` to swap directory to the last visited directory.
+
+3. `apt-file search <dir>` allows to find missing dependencies.
