@@ -1,137 +1,136 @@
-SFSetGraph 14321
-VecScatterBegin 15783
-VecScatterBegin;SFSetUp 35462
-MatConvert 189616
-MatConvert;SFSetUp 23993
-MatConvert;SFReduceBegin 4718
-MatConvert;MatConvert 345252
-MatConvert;MatConvert;MatAssemblyEnd 7762
-MatConvert;MatAssemblyBegin 419634
-MatConvert;MatAssemblyBegin;BuildTwoSidedF 410437
-MatConvert;MatAssemblyEnd 687816
-MatConvert;MatAssemblyEnd;SFSetGraph 3165
-MatCreateSubMats 125196
-PCSetUp 8697
-PCSetUp;VecSet 4482
-PCSetUp;GAMG: createProl 16685
-PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Create Graph;MatConvert;SFSetUp 6077
-PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Create Graph;MatConvert;MatConvert 22885
-PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph 671508
-PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph;MatScale 13946
-PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph;MatScale;VecScatterBegin 8849
-PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph;MatScale;VecScatterEnd   3605
-PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph;MatAssemblyEnd 200988
-PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph;MatAssemblyEnd;SFSetGraph 3379
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG 84778
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;VecScatterBegin 5931
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;VecScatterBegin;SFSetUp 10096
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg 3694
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg;MatCoarsen 48986
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg;MatCoarsen;SFSetUp 6238
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg;MatCoarsen;SFBcastBegin 4432
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg;MatCoarsen;SFBcastEnd 21927
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym 9253427
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatAssemblyBegin 6506838
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatAssemblyBegin;BuildTwoSidedF 5982754
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatAssemblyEnd 7458773
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatAssemblyEnd;SFSetGraph 4415
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatGetLocalMat 39042
-PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatGetLocalMat;MatAssemblyEnd 7988
-PCSetUp;GAMG: createProl;PCGAMGProl_AGG 39810
-PCSetUp;GAMG: createProl;PCGAMGProl_AGG;  SA: col data 15181
-PCSetUp;GAMG: createProl;PCGAMGProl_AGG;  SA: frmProl0 13772
-PCSetUp;GAMG: createProl;PCGAMGProl_AGG;  SA: frmProl0;MatAssemblyBegin 10070
-PCSetUp;GAMG: createProl;PCGAMGProl_AGG;  SA: frmProl0;MatAssemblyBegin;BuildTwoSidedF 7184
-PCSetUp;GAMG: createProl;PCGAMGProl_AGG;  SA: frmProl0;MatAssemblyEnd 34926
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG 189944
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth 15572
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;MatScale;MatScale 3172
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;MatAXPY 35565
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;MatAXPY;MatAssemblyBegin 3875
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym 62973
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym;MatGetBrAoCol 39623
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym;MatGetBrAoCol;MatAssemblyEnd 4627
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym;MatCUSPARSCopyTo 8235
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym;MatSetPreallCOO 39220
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym;MatSetPreallCOO;MatCUSPARSCopyTo 3559
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultNum;MatAssemblyEnd 3196
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l01;MatMatMultSym 15820
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l01;MatMatMultSym;MatCUSPARSCopyTo 8669
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l01;MatMatMultSym;MatSetPreallCOO 23312
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l01;MatMatMultSym;MatSetPreallCOO;MatCUSPARSCopyTo 5788
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l02;MatMatMultSym 5725
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l02;MatMatMultSym;MatCUSPARSCopyTo 6887
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l02;MatMatMultSym;MatSetPreallCOO 4069
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSetUp 5507
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSetUp;VecSet 4760
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;VecSet 11432
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;VecNormalize;VecNorm 31528
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;VecNormalize;VecScale 10003
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;MatMult 24856
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;MatMult;VecScatterBegin 11895
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;MatMult;VecScatterBegin;SFSetUp 5343
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;MatMult;VecScatterEnd   9936
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;MatMult;MatCUSPARSCopyTo 13384
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;PCApply;VecPointwiseMult 26600
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;KSPGMRESOrthog 7741
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;KSPGMRESOrthog;VecMDot 10975
-PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;KSPGMRESOrthog;VecMAXPY 11377
-PCSetUp;GAMG: partLevel;  repartition;  Move A;MatCreateSubMat 3260
-PCSetUp;GAMG: partLevel;  repartition;  Move P;MatCreateSubMat 4799
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic 149845
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;SFSetUp 31748
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;SFBcastEnd 4088
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;SFReduceBegin 16504
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;SFReduceEnd 3280
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatGetLocalMat 24840
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatGetLocalMat;MatCUSPARSGenT 19584
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatGetBrAoCol 48838
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatGetBrAoCol;MatAssemblyEnd 4630
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatCUSPARSCopyTo 18098
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatSetPreallCOO 26118
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatSetPreallCOO;MatCUSPARSCopyTo 3938
-PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPNumeric 12516
-PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPSymbolic 24951
-PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPSymbolic;MatGetLocalMat 11984
-PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPSymbolic;MatGetLocalMat;MatCUSPARSGenT 10814
-PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPSymbolic;MatSetPreallCOO 24255
-PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPSymbolic;MatSetPreallCOO;MatCUSPARSCopyTo 5517
-PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPNumeric 9313
-PCSetUp;GAMG: partLevel;PCGAMG Gal l02;MatPtAPSymbolic 12402
-PCSetUp;GAMG: partLevel;PCGAMG Gal l02;MatPtAPSymbolic;MatGetLocalMat 6191
-PCSetUp;GAMG: partLevel;PCGAMG Gal l02;MatPtAPSymbolic;MatGetLocalMat;MatCUSPARSGenT 5169
-PCSetUp;GAMG: partLevel;PCGAMG Gal l02;MatPtAPSymbolic;MatSetPreallCOO 4246
-PCSetUp;KSPSetUp 3372
-PCSetUp;KSPSetUp;VecSet 3258
-KSPSolve 19282
-KSPSolve;VecTDot 91239
-KSPSolve;VecAXPY 36808
-KSPSolve;VecAYPX 17993
-KSPSolve;MatMult 63836
-KSPSolve;MatMult;VecScatterBegin 26535
-KSPSolve;MatMult;VecScatterEnd   41458
-KSPSolve;PCApply 26561
-KSPSolve;PCApply;VecSet 33001
-KSPSolve;PCApply;MatMultAdd 84096
-KSPSolve;PCApply;MatMultAdd;VecScatterBegin 22488
-KSPSolve;PCApply;MatMultAdd;VecScatterEnd   29949
-KSPSolve;PCApply;MatMultTranspose 102936
-KSPSolve;PCApply;MatMultTranspose;VecScatterBegin 5289
-KSPSolve;PCApply;MatMultTranspose;VecScatterEnd   24521
-KSPSolve;PCApply;MatMultTranspose;MatCUSPARSGenT 5426
-KSPSolve;PCApply;MatResidual 52921
-KSPSolve;PCApply;MatResidual;VecAYPX 39647
-KSPSolve;PCApply;MatResidual;MatMult 111685
-KSPSolve;PCApply;MatResidual;MatMult;VecScatterBegin 47639
-KSPSolve;PCApply;MatResidual;MatMult;VecScatterEnd   62197
-KSPSolve;PCApply;PCSetUpOnBlocks;PCSetUp;MatLUFactorNum;MatCUSPARSSolAnl 3893
-KSPSolve;PCApply;KSPSolve 227391
-KSPSolve;PCApply;KSPSolve;VecCopy 135616
-KSPSolve;PCApply;KSPSolve;VecAYPX 198165
-KSPSolve;PCApply;KSPSolve;VecAXPBYCZ 258536
-KSPSolve;PCApply;KSPSolve;MatMult 331218
-KSPSolve;PCApply;KSPSolve;MatMult;VecScatterBegin 161219
-KSPSolve;PCApply;KSPSolve;MatMult;VecScatterEnd   150981
-KSPSolve;PCApply;KSPSolve;PCApply 8761
-KSPSolve;PCApply;KSPSolve;PCApply;VecPointwiseMult 349967
-KSPSolve;PCApply;KSPSolve;PCApply;KSPSolve;PCApply;MatSolve 4068
+SFSetGraph 14171
+VecScatterBegin 16381
+VecScatterBegin;SFSetUp 36317
+MatConvert 195751
+MatConvert;SFSetUp 23451
+MatConvert;SFReduceBegin 4316
+MatConvert;MatConvert 343306
+MatConvert;MatConvert;MatAssemblyEnd 7910
+MatConvert;MatAssemblyBegin 407377
+MatConvert;MatAssemblyBegin;BuildTwoSidedF 405758
+MatConvert;MatAssemblyEnd 1304821
+MatConvert;MatAssemblyEnd;SFSetGraph 3283
+MatCreateSubMats 124661
+PCSetUp 8772
+PCSetUp;VecSet 3682
+PCSetUp;GAMG: createProl 16714
+PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Create Graph;MatConvert;SFSetUp 5975
+PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Create Graph;MatConvert;MatConvert 23415
+PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph 666223
+PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph;MatScale 14720
+PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph;MatScale;VecScatterBegin 6577
+PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph;MatScale;VecScatterEnd   3954
+PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph;MatAssemblyEnd 200377
+PCSetUp;GAMG: createProl;PCGAMGGraph_AGG;  Filter Graph;MatAssemblyEnd;SFSetGraph 3326
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG 86030
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;VecScatterBegin 6320
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;VecScatterBegin;SFSetUp 10244
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg 3548
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg;MatCoarsen 47840
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg;MatCoarsen;SFSetUp 7610
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg;MatCoarsen;SFSetUp;BuildTwoSided 3656
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg;MatCoarsen;SFBcastBegin 4347
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;  MIS/Agg;MatCoarsen;SFBcastEnd 22131
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym 9457029
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatAssemblyBegin 6234068
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatAssemblyBegin;BuildTwoSidedF 5707436
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatAssemblyEnd 7269351
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatAssemblyEnd;SFSetGraph 3735
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatGetLocalMat 39421
+PCSetUp;GAMG: createProl;PCGAMGCoarse_AGG;PCGAMG Squ l00;MatTrnMatMultSym;MatGetLocalMat;MatAssemblyEnd 8490
+PCSetUp;GAMG: createProl;PCGAMGProl_AGG 40611
+PCSetUp;GAMG: createProl;PCGAMGProl_AGG;  SA: col data 14695
+PCSetUp;GAMG: createProl;PCGAMGProl_AGG;  SA: frmProl0 12766
+PCSetUp;GAMG: createProl;PCGAMGProl_AGG;  SA: frmProl0;MatAssemblyBegin 9487
+PCSetUp;GAMG: createProl;PCGAMGProl_AGG;  SA: frmProl0;MatAssemblyBegin;BuildTwoSidedF 7590
+PCSetUp;GAMG: createProl;PCGAMGProl_AGG;  SA: frmProl0;MatAssemblyEnd 27699
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG 186079
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth 15136
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;MatScale;MatScale 3168
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;MatAXPY 34901
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym 60649
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym;MatGetBrAoCol 40965
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym;MatGetBrAoCol;MatAssemblyEnd 4717
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym;MatCUSPARSCopyTo 7825
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultSym;MatSetPreallCOO 39401
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l00;MatMatMultNum;MatAssemblyEnd 3247
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l01;MatMatMultSym 15409
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l01;MatMatMultSym;MatCUSPARSCopyTo 8819
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l01;MatMatMultSym;MatSetPreallCOO 23246
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l01;MatMatMultSym;MatSetPreallCOO;MatCUSPARSCopyTo 4388
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l02;MatMatMultSym 5612
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l02;MatMatMultSym;MatCUSPARSCopyTo 6841
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;  SA: smooth;PCGAMG Opt l02;MatMatMultSym;MatSetPreallCOO 3980
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSetUp 4655
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSetUp;VecSet 5175
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;VecSet 11640
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;VecNormalize;VecNorm 31191
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;VecNormalize;VecScale 11202
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;MatMult 23665
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;MatMult;VecScatterBegin 10806
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;MatMult;VecScatterBegin;SFSetUp 5210
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;MatMult;VecScatterEnd   9851
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;MatMult;MatCUSPARSCopyTo 14010
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;PCApply;VecPointwiseMult 25341
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;KSPGMRESOrthog 8896
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;KSPGMRESOrthog;VecMDot 10978
+PCSetUp;GAMG: createProl;PCGAMGPOpt_AGG;KSPSolve;KSPGMRESOrthog;VecMAXPY 10808
+PCSetUp;GAMG: partLevel;  repartition;  Move A 3730
+PCSetUp;GAMG: partLevel;  repartition;  Move P;MatCreateSubMat 3701
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic 157471
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;SFSetUp 31511
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;SFBcastEnd 4289
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;SFReduceBegin 16354
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatConvert 7297
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatGetLocalMat 26041
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatGetLocalMat;MatCUSPARSGenT 15417
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatGetBrAoCol 47516
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatGetBrAoCol;MatAssemblyEnd 4829
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatCUSPARSCopyTo 17725
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatSetPreallCOO 25799
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPSymbolic;MatSetPreallCOO;MatCUSPARSCopyTo 3881
+PCSetUp;GAMG: partLevel;PCGAMG Gal l00;MatPtAPNumeric 13076
+PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPSymbolic 24196
+PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPSymbolic;MatGetLocalMat 10900
+PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPSymbolic;MatGetLocalMat;MatCUSPARSGenT 10850
+PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPSymbolic;MatSetPreallCOO 25829
+PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPSymbolic;MatSetPreallCOO;MatCUSPARSCopyTo 4381
+PCSetUp;GAMG: partLevel;PCGAMG Gal l01;MatPtAPNumeric 9752
+PCSetUp;GAMG: partLevel;PCGAMG Gal l02;MatPtAPSymbolic 12280
+PCSetUp;GAMG: partLevel;PCGAMG Gal l02;MatPtAPSymbolic;MatGetLocalMat 5966
+PCSetUp;GAMG: partLevel;PCGAMG Gal l02;MatPtAPSymbolic;MatGetLocalMat;MatCUSPARSGenT 5591
+PCSetUp;GAMG: partLevel;PCGAMG Gal l02;MatPtAPSymbolic;MatSetPreallCOO 4131
+PCSetUp;KSPSetUp 4285
+PCSetUp;KSPSetUp;VecSet 3845
+KSPSolve 19992
+KSPSolve;VecTDot 90587
+KSPSolve;VecAXPY 40483
+KSPSolve;VecAYPX 18818
+KSPSolve;MatMult 65508
+KSPSolve;MatMult;VecScatterBegin 26568
+KSPSolve;MatMult;VecScatterEnd   32753
+KSPSolve;PCApply 22546
+KSPSolve;PCApply;VecSet 34230
+KSPSolve;PCApply;MatMultAdd 91843
+KSPSolve;PCApply;MatMultAdd;VecScatterBegin 22639
+KSPSolve;PCApply;MatMultAdd;VecScatterEnd   24909
+KSPSolve;PCApply;MatMultTranspose 103339
+KSPSolve;PCApply;MatMultTranspose;VecScatterBegin 4681
+KSPSolve;PCApply;MatMultTranspose;VecScatterEnd   27650
+KSPSolve;PCApply;MatMultTranspose;MatCUSPARSGenT 5446
+KSPSolve;PCApply;MatResidual 52294
+KSPSolve;PCApply;MatResidual;VecAYPX 40698
+KSPSolve;PCApply;MatResidual;MatMult 103069
+KSPSolve;PCApply;MatResidual;MatMult;VecScatterBegin 47459
+KSPSolve;PCApply;MatResidual;MatMult;VecScatterEnd   46186
+KSPSolve;PCApply;PCSetUpOnBlocks;PCSetUp;MatLUFactorNum;MatCUSPARSSolAnl 3636
+KSPSolve;PCApply;KSPSolve 217121
+KSPSolve;PCApply;KSPSolve;VecCopy 135366
+KSPSolve;PCApply;KSPSolve;VecAYPX 191805
+KSPSolve;PCApply;KSPSolve;VecAXPBYCZ 258834
+KSPSolve;PCApply;KSPSolve;MatMult 300473
+KSPSolve;PCApply;KSPSolve;MatMult;VecScatterBegin 158739
+KSPSolve;PCApply;KSPSolve;MatMult;VecScatterEnd   156652
+KSPSolve;PCApply;KSPSolve;PCApply 8727
+KSPSolve;PCApply;KSPSolve;PCApply;VecPointwiseMult 348767
+KSPSolve;PCApply;KSPSolve;PCApply;KSPSolve;PCApply;MatSolve 4093
