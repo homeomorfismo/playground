@@ -1,6 +1,6 @@
----
-How to install all the softwares I need?
----
+# How to install all the softwares I need?
+
+0. Check [tricks](tricks.md) to feel more familiar with the whole hustle.
 
 1. Install NGSolve. See [here](https://docu.ngsolve.org/nightly/install/installlinux.html). You might want to build on Linux locally.
 
@@ -61,6 +61,8 @@ How to install all the softwares I need?
 
 3. Install CUDA. See [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#ubuntu-installation) and [here](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local).
 
+*First,* check `nvidia-smi` and the CUDA version. For some reason, you could have broken drivers. Install `aptitude`. Disable secure boot in BIOS. Sometimes you will need to reinstall/purge the old drivers, then install the new ones.
+
     - Check [pre-installation instructions](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#pre-installation-actions). 
     - Run `uname -m && cat /etc/*release`. Check `gcc` installation with `gcc --version`.
     - Check the kernels `uname -r`; install the kernel headers `sudo apt-get install linux-headers-$(uname -r)`.
@@ -82,7 +84,7 @@ How to install all the softwares I need?
     - Check your `PATH` with `echo $PATH`. You might need to append `export PATH=/usr/local/cuda-11.7/bin${PATH:+:${PATH}}` to your `PATH`. Edit `~/.bashrc` file.
     - Pray. Move on.
 
-0. Install OpenMPI. See [here](https://www.open-mpi.org/faq/?category=building#easy-build).
+4. Install OpenMPI. See [here](https://www.open-mpi.org/faq/?category=building#easy-build). **PENDING**
     - To install the most recent version of OpenMPI CUDA-aware requires the UCX software. See [here](https://github.com/openucx/ucx).
     - Install UCX.
         - Clone the repo. `git clone git@github.com:openucx/ucx.git`
@@ -99,23 +101,7 @@ How to install all the softwares I need?
     - Do `make -j4 install`.
 
 
-5. Install Firedrake. See [here](https://www.firedrakeproject.org/download.html).
+5. Install Firedrake. See [here](https://www.firedrakeproject.org/download.html). **PENDING**
 
     - I still need to check if I can use my own PETSc instead of the FIredrake version, despite the firedrake version uses the most recent PETSc.
 
----
-
-# Tricks
-
-1. Python envs
-    
-    - Install the python enviroments manager.
-    - Create a directory for managing the different enviroments. E.g., `$HOME/.local/env`.
-    - Create a python env with `venv`.
-    - *Optional.* Set up BASH alias in `.bashrc` with `alias your_fav_alias='source <path>/activate'`.
-    
-2. Stack dirs
-
-    - Use `pushd` to push a dir in the `dirs` stack. Use `popd` to pop a dir from the stack. Use `cd -` to swap directory to the last visited directory.
-
-3. `apt-file search <dir>` allows to find missing dependencies.

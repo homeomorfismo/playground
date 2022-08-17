@@ -29,11 +29,14 @@ print('hcoarse', hcoarse)
 
 # Define PETSC stages
 
-# stage1 = psc.Log.Stage('Stage 1')
-# class1 = psc.Log.Class('Class A')
-# event1 = psc.Log.Event('Event Alpha',class1)
+stage_msh = psc.Log.Stage('Meshing')
+stage_ngs = psc.Log.Stage('Setting in NGS')
+stage_trf = psc.Log.Stage('Transfer ngs2petsc')
+stage_ksp = psc.Log.Stage('PETSc solver')
 
 # Generate Netgen mesh and distribute:
+
+stage_msh.push()
 
 if comm.rank == 0:
     print('Generating Mesh ...')
@@ -45,9 +48,13 @@ for i in range(nref):
     ngmesh.Refine()
 mesh = Mesh(ngmesh)
 
+stage_msh.pop()
+
 # sys.exit()
 
 # Do standard NGSolve stuff, but it's parallel now:
+
+stage_ngs.push()
 
 V = ng.H1(mesh, order=3, dirichlet=[1, 2, 3, 4])
 print('Dofs distributed: rank '+str(comm.rank)+' has '+str(V.ndof) +
@@ -59,6 +66,8 @@ f += 32 * (y*(1-y)+x*(1-x)) * v * dx
 f.Assemble()
 uh = ng.GridFunction(V)
 
+stage_ngs.pop()
+
 if comm.rank == 0:
     print('Parallel ngsolve assembly complete')
     print('Converting matrix system to Petsc ...')
@@ -66,12 +75,10 @@ if comm.rank == 0:
 # Set up things to move to Petsc.
 # n2p = ngsolve.ngs2petsc can transfer vec/mat between NGSolve and Petsc:
 
-# event1.setActive(True)
+stage_trf.push()
 
 psc_mat = n2p.CreatePETScMatrix(a.mat, V.FreeDofs())
 vecmap = n2p.VectorMapping(a.mat.row_pardofs, V.FreeDofs())
-
-# event1.deactivate()
 
 # Get some Petsc vectors
 psc_f, psc_u = psc_mat.createVecs()
@@ -84,7 +91,11 @@ psc_f.setFromOptions()
 psc_u.setFromOptions()
 psc_mat.setFromOptions()
 
+stage_trf.pop()
+
 # Set up KSP from psc = petsc4py.PETSc
+
+stage_ksp.push()
 
 ksp = psc.KSP()
 ksp.create()
@@ -95,6 +106,8 @@ ksp.getPC().setType('gamg')
 ksp.setTolerances(rtol=1e-14, atol=0, divtol=1e16, max_it=500)
 
 ksp.setFromOptions()
+
+stage_ksp.pop()
 
 def monitor(ksp, its, rnorm):
     """ I think this is the way petsc4py wants us to set up
@@ -111,20 +124,36 @@ if comm.rank == 0:
 
 # Convert NGSolve assembled rhs vector to Petsc vector
 
+stage_trf.push()
+
 vecmap.N2P(f.vec, psc_f)
+
+stage_trf.pop()
 
 # Solve using Petsc:
 
+stage_ksp.push()
+
 ksp.solve(psc_f, psc_u)
+
+stage_ksp.pop()
 
 # Convert from Petsc to NGSolve:
 
+stage_trf.push()
+
 vecmap.P2N(psc_u, uh.vec)
 
+stage_trf.pop()
+
 # Compute error (in NGSolve)  since  exact solution known:
+
+stage_ngs.push()
 
 exact = 16*x*(1-x)*y*(1-y)
 
 error = ng.Integrate((uh-exact)*(uh-exact), mesh)
 if comm.rank == 0:
     print('L2-error', error)
+
+stage_ngs.pop()
