@@ -61,25 +61,29 @@
 
 3. Install CUDA. See [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#ubuntu-installation) and [here](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local).
 
-*First,* check `nvidia-smi` and the CUDA version. For some reason, you could have broken drivers. Install `aptitude`. Disable secure boot in BIOS. Sometimes you will need to reinstall/purge the old drivers, then install the new ones.
+    First, check `nvidia-smi` and the CUDA version. For some reason, you could have broken drivers. Install `aptitude`. Disable secure boot in BIOS. Sometimes you will need to reinstall/purge the old drivers, then install the new ones.
 
     - Check [pre-installation instructions](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#pre-installation-actions). 
     - Run `uname -m && cat /etc/*release`. Check `gcc` installation with `gcc --version`.
     - Check the kernels `uname -r`; install the kernel headers `sudo apt-get install linux-headers-$(uname -r)`.
     - Remove outdated signing key `sudo apt-key del 7fa2af80`
     - Check the [second link](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local). Do
+
     ```
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
     sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
     wget https://developer.download.nvidia.com/compute/cuda/11.7.0/local_installers/cuda-repo-ubuntu2204-11-7-local_11.7.0-515.43.04-1_amd64.deb
     sudo dpkg -i cuda-repo-ubuntu2204-11-7-local_11.7.0-515.43.04-1_amd64.deb
     ```
+
     At this stage, the terminal should suggest the target path for `cp`.
+
     ```
     sudo cp /var/cuda-repo-ubuntu2204-11-7-local/cuda-*-keyring.gpg /usr/share/keyrings/
     sudo apt-get update
     sudo apt-get -y install cuda
     ```
+
     - Install the GDS packages `sudo apt-get install nvidia-gds` and reboot.
     - Check your `PATH` with `echo $PATH`. You might need to append `export PATH=/usr/local/cuda-11.7/bin${PATH:+:${PATH}}` to your `PATH`. Edit `~/.bashrc` file.
     - Pray. Move on.

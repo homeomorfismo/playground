@@ -50,15 +50,26 @@ timer_ksp = Timer('PETSc solver')
 timer_msh.Start()
 stage_msh.push()
 
+# if comm.rank == 0:
+    # ngmesh = unit_cube.GenerateMesh(maxh=hcoarse).Distribute(comm)
+# else:
+    # ngmesh = netgen.meshing.Mesh.Receive(comm)
+
 if comm.rank == 0:
     print('Generating Mesh ...')
-    ngmesh = unit_cube.GenerateMesh(maxh=hcoarse).Distribute(comm)
+    ngmesh = unit_cube.GenerateMesh(maxh=hcoarse)
+    for i in range(nref):
+        ngmesh.Refine()
+    ngmesh = ngmesh.Distribute(comm)
 else:
     ngmesh = netgen.meshing.Mesh.Receive(comm)
+mesh=Mesh(ngmesh)
 
-for i in range(nref):
-    ngmesh.Refine()
-mesh = Mesh(ngmesh)
+comm.Barrier()
+
+# for i in range(nref):
+    # ngmesh.Refine()
+# mesh = Mesh(ngmesh)
 
 stage_msh.pop()
 timer_msh.Stop()

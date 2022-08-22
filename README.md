@@ -2,6 +2,7 @@
 
 A bunch of practice code. For installing the main software, drivers and stuff, check [this list](howto.md). For some review of those small tiny little tricks, check [this list](tricks.md).
 
+
 ## MPI
 
 I acknowledge the work available in [www.mpitutorial.com](www.mpitutorial.com).
