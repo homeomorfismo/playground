@@ -86,6 +86,7 @@ print('Dofs distributed: rank '+str(comm.rank)+' has '+str(V.ndof) +
       ' of '+str(V.ndofglobal)+' dofs!')
 u, v = V.TnT()
 a = ng.BilinearForm(grad(u)*grad(v)*dx).Assemble()
+
 f = ng.LinearForm(V)
 f += 32 * (y*(1-y)+x*(1-x)) * v * dx
 f.Assemble()
