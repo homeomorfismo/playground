@@ -44,13 +44,14 @@ stage_trf = psc.Log.Stage('Transfer ngs2petsc')
 stage_ksp = psc.Log.Stage('PETSc solver')
 
 ## Define ngstd-Timers (Profiling/timing)
-timer_msh = Timer('Meshing')
-timer_ngs = Timer('Setting in NGS')
-timer_trf = Timer('Transfer ngs2petsc')
-timer_ksp = Timer('PETSc solver')
+#TODO OBS PETSc stages take avr time among all ranks! Even if there is no use of PETSc
+#timer_msh = Timer('Meshing')
+#timer_ngs = Timer('Setting in NGS')
+#timer_trf = Timer('Transfer ngs2petsc')
+#timer_ksp = Timer('PETSc solver')
 
 # Generate Netgen mesh and distribute:
-timer_msh.Start()
+#timer_msh.Start()
 stage_msh.push()
 
 comm.Barrier()
@@ -67,27 +68,27 @@ mesh=Mesh(ngmesh)
 comm.Barrier()
 
 stage_msh.pop()
-timer_msh.Stop()
+#timer_msh.Stop()
 
 # Standard mixed set-up in NGSolve (parallel)
-# timer_ngs.Start()
+# #timer_ngs.Start()
 # stage_ngs.push()
 # stage_ngs.pop()
-# timer_ngs.Stop()
+# #timer_ngs.Stop()
 #### TODO Check notes. Check DoFs here!
 
 # FES: RT and Disc Pol
 V = ng.HDiv(mesh,order=order_fes+1, RT=True,dirichlet="top|bottom|right|left") 
 P = ng.L2(mesh,order=order_fes)
-VP = V*P
+# VP = V*P
 
 pardof_vel = V.ParallelDofs()
 pardof_pre = P.ParallelDofs()
-pardof_com = VP.ParallelDofs()
+# pardof_com = VP.ParallelDofs()
 
 globalnums_vel, nglob_vel = pardof_vel.EnumerateGlobally()
 globalnums_pre, nglob_pre = pardof_pre.EnumerateGlobally()
-globalnums_com, nglob_com = pardof_com.EnumerateGlobally()
+# globalnums_com, nglob_com = pardof_com.EnumerateGlobally()
 
 #TODO TEMP PRINT PAR_DOFS
 #TODO OBS pardof is a NGSolve object
@@ -112,60 +113,60 @@ globalnums_com, nglob_com = pardof_com.EnumerateGlobally()
 # print('Local Enumerations VP from rank [', comm.rank, ']:', globalnums_com, 'Global en VP',nglob_com)
 
 # Compound form
-u, p = VP.TrialFunction()
-v, q = VP.TestFunction()
-c = ng.BilinearForm(VP)
-c += (u*v - p*div(v) - div(u)*q)*dx
-c.Assemble()
+# u, p = VP.TrialFunction()
+# v, q = VP.TestFunction()
+# c = ng.BilinearForm(VP)
+# c += (u*v - p*div(v) - div(u)*q)*dx
+# c.Assemble()
 
 #TODO Set RHS
 # func = 32 * (y*(1-y)+x*(1-x)) 
-f = ng.LinearForm(VP)
-f += -32*(y*(1-y)+x*(1-x))*q*dx # + g*v*dx
-f.Assemble()
+# f = ng.LinearForm(VP)
+# f += -32*(y*(1-y)+x*(1-x))*q*dx # + g*v*dx
+# f.Assemble()
 
-uph = ng.GridFunction(VP)
+# uph = ng.GridFunction(VP)
 
 # Create Mat
-c_locmat = c.mat.local_mat
-c_val, c_col, c_ind = c_locmat.CSR()
-c_ind = np.array(c_ind, dtype='int32')
-c_psc_loc = psc.Mat().createAIJ(size=(c_locmat.height, c_locmat.width),csr=(c_ind,c_col,c_val),comm=MPI.COMM_SELF)
+# c_locmat = c.mat.local_mat
+# c_val, c_col, c_ind = c_locmat.CSR()
+# c_ind = np.array(c_ind, dtype='int32')
+# c_psc_loc = psc.Mat().createAIJ(size=(c_locmat.height, c_locmat.width),csr=(c_ind,c_col,c_val),comm=MPI.COMM_SELF)
 
 # IS
-iset = psc.IS().createGeneral(indices=globalnums_com, comm=comm) # nglob_com
-lgmap = psc.LGMap().createIS(iset)
+# iset = psc.IS().createGeneral(indices=globalnums_com, comm=comm) # nglob_com
+# lgmap = psc.LGMap().createIS(iset)
 
 # Global mat
-c_psc = psc.Mat().createPython(size=nglob_com, comm=comm)
-c_psc.setType(psc.Mat.Type.IS)
-c_psc.setLGMap(lgmap)
-c_psc.setISLocalMat(c_psc_loc)
-c_psc.assemble()
-c_psc.convert("mpiaij")
-c_psc.setFromOptions()
+# c_psc = psc.Mat().createPython(size=nglob_com, comm=comm)
+# c_psc.setType(psc.Mat.Type.IS)
+# c_psc.setLGMap(lgmap)
+# c_psc.setISLocalMat(c_psc_loc)
+# c_psc.assemble()
+# c_psc.convert("mpiaij")
+# c_psc.setFromOptions()
 
 # RHS + vectors ?
-f.vec.Cumulate()
-v1, v2 = c_psc.createVecs()
-v2_loc = v2.getSubVector(iset)
-v2_loc.getArray()[:] = f.vec.FV()
-v2.restoreSubVector(iset,v2_loc)
+# f.vec.Cumulate()
+# v1, v2 = c_psc.createVecs()
+# v2_loc = v2.getSubVector(iset)
+# v2_loc.getArray()[:] = f.vec.FV()
+# v2.restoreSubVector(iset,v2_loc)
 
 # KSP Solver
-ksp = psc.KSP()
-ksp.create()
-ksp.setOperators(c_psc)
-ksp.setType(psc.KSP.Type.CG)
-ksp.setNormType(psc.KSP.NormType.NORM_NATURAL)
-ksp.getPC().setType("gamg")
-ksp.setTolerances(rtol=1e-6, atol=0, divtol=1e16, max_it=400)
-ksp.solve(v2,v1)
+# ksp = psc.KSP()
+# ksp.create()
+# ksp.setOperators(c_psc)
+# ksp.setType(psc.KSP.Type.CG)
+# ksp.setNormType(psc.KSP.NormType.NORM_NATURAL)
+# ksp.getPC().setType("gamg")
+# ksp.setTolerances(rtol=1e-6, atol=0, divtol=1e16, max_it=400)
+# ksp.solve(v2,v1)
 
 # Recover sol
-v1_loc = v1.getSubVector(iset)
-for i in range(len(uph.vec)):
-    uph.vec.FV()[i] = v1_loc.getArray()[i]
+# v1_loc = v1.getSubVector(iset)
+# for i in range(len(uph.vec)):
+#     uph.vec.FV()[i] = v1_loc.getArray()[i]
 
 #TODO TEMP EXIT
 sys.exit()
