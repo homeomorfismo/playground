@@ -12,10 +12,12 @@ from ngsolve.ngstd import Timer
 from tabulate import tabulate
 
 # Not sure if we requiere ngs2petsc
+# Yes, we do. Maybe this is worth a contribution!
 import ngsolve.ngs2petsc as n2p
 
 ########## --- --- ##########
 
+# TODO 
 # Should be useful for runtime options without exporting PETSC_OPTIONS
 import sys
 comm = MPI.COMM_WORLD
@@ -35,20 +37,15 @@ if comm.rank == 0:
     print('hcoarse', hcoarse)
     print('ord', order_fes)
     print('--- End user-defined values ---')
-# sys.exit()
 
 ## Define PETSC stages (Profiling)
+#OBS PETSc stages take avr time among all ranks! Even if there is no use of PETSc
+#    thus, no need of netgen Timer
+
 stage_msh = psc.Log.Stage('Meshing')
 stage_ngs = psc.Log.Stage('Setting in NGS')
 stage_trf = psc.Log.Stage('Transfer ngs2petsc')
 stage_ksp = psc.Log.Stage('PETSc solver')
-
-## Define ngstd-Timers (Profiling/timing)
-#TODO OBS PETSc stages take avr time among all ranks! Even if there is no use of PETSc
-#timer_msh = Timer('Meshing')
-#timer_ngs = Timer('Setting in NGS')
-#timer_trf = Timer('Transfer ngs2petsc')
-#timer_ksp = Timer('PETSc solver')
 
 # Generate Netgen mesh and distribute:
 #timer_msh.Start()
@@ -68,19 +65,14 @@ mesh=Mesh(ngmesh)
 comm.Barrier()
 
 stage_msh.pop()
-#timer_msh.Stop()
 
 # Standard mixed set-up in NGSolve (parallel)
-# #timer_ngs.Start()
 # stage_ngs.push()
 # stage_ngs.pop()
-# #timer_ngs.Stop()
 
 # FES: Taylor-Hood P2-P1
 V = ng.VectorH1(mesh,order=order_fes+1,dirichlet="top|bottom|right|left") 
 Q = ng.H1(mesh,order=order_fes)
-
-#TODO Check transport of matrices
 
 u,v = V.TnT()
 p,q = Q.TnT()
@@ -93,7 +85,7 @@ b = ng.BilinearForm(trialspace=V,testspace=Q)
 b += div(u)*q*dx
 b.Assemble()
 
-#TODO PC
+# Mass PC
 mass_p = ng.BilinearForm(Q)
 mass_p += p*q*dx
 mass_p.Assemble()
@@ -105,10 +97,6 @@ f.Assemble()
 
 g = ng.LinearForm(Q)
 g.Assemble()
-
-# Grid Functions
-gu = ng.GridFunction(V, name="vel")
-gp = ng.GridFunction(Q, name="pre")
 
 # Transport to PETSc
 ## Recover Parallel DoFs
@@ -192,10 +180,52 @@ bT_psc.setFromOptions()
 mass_p_psc.setFromOptions()
 
 # Mat-Nest
-mats = [a_psc,bT_psc,
-        b_psc,None]
+mats = [[a_psc,bT_psc],
+        [b_psc,None]]
 
-psc_mat = psc.Mat().create()
-psc_mat.createNest(mats)
-#TEMP EXIT
-# sys.exit()
+psc_mat = psc.Mat().create().createNest(mats)
+
+# Define fields
+## Define KSP
+ksp = psc.KSP().create()
+ksp.setOperators(psc_mat)
+## Get PC
+pc = ksp.getPC()
+pc.setType("fieldsplit")
+## Extract ISs from MatNest
+is_row, is_col = psc_mat.getNestISs()
+## Define Fields
+pc.setFieldSplitIS(["vel",is_row[0]], ["pre",is_row[1]])
+## Get SubKSP
+subksp = pc.getFieldSplitSubKSP()
+aa, pp = subksp[0].getOperators()
+subksp[0].setOperators(A=aa, P=mass_p_psc)
+
+# Configure KSP & PC
+ksp.setTolerances(rtol=1e-14, atol=0, divtol=1e16, max_it=500)
+
+# Runtime options
+ksp.setFromOptions()
+pc.setFromOptions()
+
+#TODO Solve
+#TODO Grid Functions
+gu = ng.GridFunction(V, name="vel")
+gp = ng.GridFunction(Q, name="pre")
+# TODO Create PETSc vectors
+
+psc_up, psc_fg = psc_mat.createVecs()
+
+vecmap.N2P(f.vec,psc_f)
+vecmap.N2P(g.vec,psc_g)
+
+# psc_fg = psc.Vec().create().createNest([psc_f,psc_g])
+
+ksp.solve(psc_fg, psc_up)
+
+
+# vecmap.P2N(psc_u, uh.vec)
+# exact = 16*x*(1-x)*y*(1-y)
+# error = ng.Integrate((uh-exact)*(uh-exact), mesh)
+# if comm.rank == 0:
+    # print('L2-error', error)
