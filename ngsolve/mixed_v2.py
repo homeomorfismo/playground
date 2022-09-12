@@ -51,7 +51,6 @@ stage_ksp = psc.Log.Stage('PETSc solver')
 #timer_msh.Start()
 stage_msh.push()
 
-comm.Barrier()
 if comm.rank == 0:
     print('Generating Mesh ...')
     ngmesh = unit_square.GenerateMesh(maxh=hcoarse)
@@ -67,9 +66,6 @@ comm.Barrier()
 stage_msh.pop()
 
 # Standard mixed set-up in NGSolve (parallel)
-# stage_ngs.push()
-# stage_ngs.pop()
-
 # FES: Taylor-Hood P2-P1
 V = ng.VectorH1(mesh,order=order_fes+1,dirichlet="top|bottom|right|left") 
 Q = ng.H1(mesh,order=order_fes)
@@ -161,6 +157,11 @@ b_psc.convert("mpiaij")
 
 bT_psc = b_psc.duplicate(copy=True)
 bT_psc.transpose()
+bT_psc.assemble()
+
+#vecmap_Q = n2p.VectorMapping(b.mat.row_pardofs, Q.FreeDofs())
+####DEBUG
+
 
 #TEMP
 if comm.rank == 0:
@@ -179,7 +180,7 @@ b_psc.setFromOptions()
 bT_psc.setFromOptions()
 mass_p_psc.setFromOptions()
 
-# Mat-Nest
+#TODO Mat-Nest
 mats = [[a_psc,bT_psc],
         [b_psc,None]]
 
@@ -196,15 +197,20 @@ pc.setType("fieldsplit")
 is_row, is_col = psc_mat.getNestISs()
 ## Define Fields
 pc.setFieldSplitIS(["vel",is_row[0]], ["pre",is_row[1]])
-## Get SubKSP
-subksp = pc.getFieldSplitSubKSP()
-aa, pp = subksp[0].getOperators()
-subksp[0].setOperators(A=aa, P=mass_p_psc)
+##TODO Get SubKSP
+# subksp = pc.getFieldSplitSubKSP()
+# aa, pp = subksp[0].getOperators()
+# subksp[0].setOperators(A=aa, P=mass_p_psc)
 
 # Configure KSP & PC
 ksp.setTolerances(rtol=1e-14, atol=0, divtol=1e16, max_it=500)
 
 # Runtime options
+a_psc.setFromOptions()
+b_psc.setFromOptions()
+bT_psc.setFromOptions()
+mass_p_psc.setFromOptions()
+psc_mat.setFromOptions()
 ksp.setFromOptions()
 pc.setFromOptions()
 
@@ -216,15 +222,24 @@ gp = ng.GridFunction(Q, name="pre")
 
 psc_up, psc_fg = psc_mat.createVecs()
 
-vecmap.N2P(f.vec,psc_f)
-vecmap.N2P(g.vec,psc_g)
+psc_f = vecmap_V.N2P(f.vec)
+psc_g = vecmap_mass.N2P(g.vec)
 
-# psc_fg = psc.Vec().create().createNest([psc_f,psc_g])
+#psc_fg = psc.Vec().create().createNest([psc_f,psc_g])
+#psc_up = psc_fg.duplicate() 
+
+psc_f.setFromOptions()
+psc_g.setFromOptions()
+psc_fg.setFromOptions()
+psc_up.setFromOptions()
 
 ksp.solve(psc_fg, psc_up)
 
+#nest_up = psc_up.getNestSubVecs()
 
-# vecmap.P2N(psc_u, uh.vec)
+#vecmap_V.P2N(nest_up[0],gu.vec) 
+#vecmap_mass.P2N(nest_up[1],gp.vec)
+
 # exact = 16*x*(1-x)*y*(1-y)
 # error = ng.Integrate((uh-exact)*(uh-exact), mesh)
 # if comm.rank == 0:
