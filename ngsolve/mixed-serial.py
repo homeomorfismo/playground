@@ -51,15 +51,13 @@ stage_ksp = psc.Log.Stage('PETSc solver')
 #timer_msh.Start()
 stage_msh.push()
 
-if comm.rank == 0:
-    print('Generating Mesh ...')
-    ngmesh = unit_square.GenerateMesh(maxh=hcoarse)
-    for i in range(nref):
-        ngmesh.Refine()
-    ngmesh = ngmesh.Distribute(comm)
-else:
-    print('Rank [',comm.rank,'] receiving mesh...')
-    ngmesh = netgen.meshing.Mesh.Receive(comm)
+print('Generating Mesh ...')
+ngmesh = unit_square.GenerateMesh(maxh=hcoarse)
+for i in range(nref):
+    ngmesh.Refine()
+# ngmesh = ngmesh.Distribute(comm)
+# print('Rank [',comm.rank,'] receiving mesh...')
+# ngmesh = netgen.meshing.Mesh.Receive(comm)
 mesh=Mesh(ngmesh)
 comm.Barrier()
 
@@ -174,12 +172,6 @@ if comm.rank == 0:
 mass_p_psc = n2p.CreatePETScMatrix(mass_p.mat, Q.FreeDofs())
 vecmap_mass = n2p.VectorMapping(mass_p.mat.row_pardofs, Q.FreeDofs())
 
-# Run-time options
-a_psc.setFromOptions()
-b_psc.setFromOptions()
-bT_psc.setFromOptions()
-mass_p_psc.setFromOptions()
-
 #TODO Mat-Nest
 mats = [[a_psc,bT_psc],
         [b_psc,None]]
@@ -192,11 +184,14 @@ ksp = psc.KSP().create()
 ksp.setOperators(psc_mat)
 ## Get PC
 pc = ksp.getPC()
+if comm.rank == 0:
+    print(pc)
 pc.setType("fieldsplit")
 ## Extract ISs from MatNest
 is_row, is_col = psc_mat.getNestISs()
 ## Define Fields
 pc.setFieldSplitIS(["vel",is_row[0]], ["pre",is_row[1]])
+pc.setFactorShift(amount=0.0)
 ##TODO Get SubKSP
 # subksp = pc.getFieldSplitSubKSP()
 # aa, pp = subksp[0].getOperators()
@@ -206,13 +201,22 @@ pc.setFieldSplitIS(["vel",is_row[0]], ["pre",is_row[1]])
 ksp.setTolerances(rtol=1e-14, atol=0, divtol=1e16, max_it=500)
 
 # Runtime options
+psc_mat.setFromOptions()
 a_psc.setFromOptions()
 b_psc.setFromOptions()
 bT_psc.setFromOptions()
 mass_p_psc.setFromOptions()
-psc_mat.setFromOptions()
 ksp.setFromOptions()
 pc.setFromOptions()
+
+psc_mat.setUp()
+a_psc.setUp()
+b_psc.setUp()
+bT_psc.setUp()
+mass_p_psc.setUp()
+# THIS LINE CUDA
+pc.setUp()
+ksp.setUp()
 
 #TODO Solve
 #TODO Grid Functions
@@ -233,6 +237,12 @@ psc_g.setFromOptions()
 psc_fg.setFromOptions()
 psc_up.setFromOptions()
 
+psc_f.setUp()
+psc_g.setUp()
+psc_fg.setUp()
+psc_up.setUp()
+
+# THIS LINE NO CUDA
 ksp.solve(psc_fg, psc_up)
 
 #nest_up = psc_up.getNestSubVecs()
