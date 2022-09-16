@@ -1,3 +1,5 @@
+# CHECK https://link.springer.com/content/pdf/10.1007/s10915-015-0090-8.pdf
+
 import ngsolve as ng
 import netgen
 from mpi4py import MPI
@@ -66,7 +68,8 @@ comm.Barrier()
 stage_msh.pop()
 
 # Standard mixed set-up in NGSolve (parallel)
-# FES: Taylor-Hood P2-P1
+# FES: Taylor Hood P2-P1
+#TODO I might need to remove the order_fes option!
 V = ng.VectorH1(mesh,order=order_fes+1,dirichlet="top|bottom|right|left") 
 Q = ng.H1(mesh,order=order_fes)
 
@@ -78,7 +81,7 @@ a += ng.InnerProduct(grad(u),grad(v))*dx
 a.Assemble()
 
 b = ng.BilinearForm(trialspace=V,testspace=Q)
-b += div(u)*q*dx
+b += (-1)*div(u)*q*dx
 b.Assemble()
 
 # Mass PC
@@ -87,8 +90,10 @@ mass_p += p*q*dx
 mass_p.Assemble()
 
 #TODO Linear Forms
+# fx = 4*ng.pi*ng.pi*ng.sin(2*ng.pi*y)
+# fy = 4*ng.pi*ng.pi*ng.sin(2*ng.pi*x)*(-1 + 4*ng.cos(2*ng.pi*y))
 f = ng.LinearForm(V)
-f += ng.CF((0,x-0.5))*v*dx
+f += ng.CF((4*ng.pi*ng.pi*ng.sin(2*ng.pi*y),4*ng.pi*ng.pi*ng.sin(2*ng.pi*x)*(-1 + 4*ng.cos(2*ng.pi*y))))*v*dx
 f.Assemble()
 
 g = ng.LinearForm(Q)
@@ -188,9 +193,9 @@ ksp.setOperators(psc_mat)
 pc = ksp.getPC()
 pc.setType("fieldsplit")
 pc.setFieldSplitIS(("vel",ISs[0][0]), ("pre",ISs[0][1]))
-pc.setFieldSplitType(5)
-pc.setFieldSplitSchurFactType(4)
-pc.setFieldSplitSchurPreType(1)
+pc.setFieldSplitType(psc.PC.CompositeType.SCHUR)
+pc.setFieldSplitSchurFactType(psc.PC.SchurFactType.FULL)
+pc.setFieldSplitSchurPreType(psc.PC.SchurPreType.SELF)
 
 # ISs[0][0].view()
 # ISs[0][1].view()
@@ -236,7 +241,7 @@ psc_f = vecmap_V.N2P(f.vec)
 psc_g = vecmap_mass.N2P(g.vec)
 
 #psc_fg = psc.Vec().create().createNest([psc_f,psc_g])
-psc_fg.concatenate([psc_f, psc_g])
+psc_fg, is_fg = psc_fg.concatenate([psc_f, psc_g])
 
 psc_f.setFromOptions()
 psc_g.setFromOptions()
@@ -256,7 +261,14 @@ psc_p = psc_up.getSubVector(ISs[0][1])
 vecmap_V.P2N(psc_u,gu.vec) 
 vecmap_mass.P2N(psc_p,gp.vec)
 
-# exact = 16*x*(1-x)*y*(1-y)
-# error = ng.Integrate((uh-exact)*(uh-exact), mesh)
-# if comm.rank == 0:
-    # print('L2-error', error)
+# ux = 2*ng.sin(ng.pi*x)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)
+# uy = (-2)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)
+cf_u = ng.CF( (2*ng.sin(ng.pi*x)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y),(-2)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)) )
+# p = 4*ng.pi*ng.sin(2*ng.pi*x)*sin(2*ng.pi*y)
+cf_p = ng.CF( 4*ng.pi*ng.sin(2*ng.pi*x)*ng.sin(2*ng.pi*y) ) 
+
+error_vel = ng.Integrate(ng.InnerProduct(cf_u - gu,cf_u - gu), mesh)
+error_pre = ng.Integrate((cf_p - gp)*(cf_p - gp), mesh)
+if comm.rank == 0:
+    print('L2-error vel', ng.sqrt(error_vel))
+    print('L2-error pre', ng.sqrt(error_pre))
