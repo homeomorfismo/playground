@@ -6,4 +6,8 @@
 - `mixed.py` solves the Laplace eq. with a mixed method. Figuring out how to use PETSc fieldsplit. *In Progress.*
 
 ## TODO
-Remove refine label. `lapl.py` to `lapl.OLD.py`. 
+- Remove refine label. `lapl.py` to `OLD.lapl.py`. Analog for other methods.
+- To finish serial version of the mixed method.
+- To find a good example for setting up `mixed.py`.
+- ~~To do the no-PETSc version of `stokes.py`.~~
+

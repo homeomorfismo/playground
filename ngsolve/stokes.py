@@ -17,9 +17,6 @@ from tabulate import tabulate
 # Yes, we do. Maybe this is worth a contribution!
 import ngsolve.ngs2petsc as n2p
 
-########## --- --- ##########
-
-# TODO 
 # Should be useful for runtime options without exporting PETSC_OPTIONS
 import sys
 comm = MPI.COMM_WORLD
@@ -30,7 +27,7 @@ if comm.rank == 0:
 
 ## PETSc Options
 opt = psc.Options()
-nref = opt.getInt('nref',1)
+nref = opt.getInt('nref',0)
 hcoarse = opt.getReal('h',0.5)
 order_fes = opt.getInt('ord',1)
 if comm.rank == 0:
@@ -50,7 +47,6 @@ stage_trf = psc.Log.Stage('Transfer ngs2petsc')
 stage_ksp = psc.Log.Stage('PETSc solver')
 
 # Generate Netgen mesh and distribute:
-#timer_msh.Start()
 stage_msh.push()
 
 if comm.rank == 0:
@@ -98,6 +94,9 @@ f.Assemble()
 
 g = ng.LinearForm(Q)
 g.Assemble()
+
+print('Free Dofs V', len(V.FreeDofs()), ' - ', V.FreeDofs())
+print('Free Dofs Q', len(Q.FreeDofs()), ' - ', Q.FreeDofs())
 
 # Transport to PETSc
 ## Recover Parallel DoFs
@@ -166,8 +165,6 @@ bT_psc.assemble()
 
 #vecmap_Q = n2p.VectorMapping(b.mat.row_pardofs, Q.FreeDofs())
 
-####DEBUG
-
 ## PC for P
 mass_p_psc = n2p.CreatePETScMatrix(mass_p.mat, Q.FreeDofs())
 vecmap_mass = n2p.VectorMapping(mass_p.mat.row_pardofs, Q.FreeDofs())
@@ -178,10 +175,7 @@ mats = [[a_psc,bT_psc],
 
 psc_mat = psc.Mat().create().createNest(mats)
 psc_mat.assemble()
-
 # Block size (1,1)
-# psc_mat.view()
-# print(psc_mat.getBlockSizes())
 
 # Define fields
 ## Extract ISs from MatNest
@@ -210,6 +204,9 @@ pc.setFieldSplitSchurPreType(psc.PC.SchurPreType.SELF)
 
 # Configure KSP & PC
 ksp.setTolerances(rtol=1e-14, atol=0, divtol=1e16, max_it=500)
+
+psc_mat.convert("mpiaij")
+psc_mat.view()
 
 # Runtime options
 psc_mat.setFromOptions()
@@ -260,6 +257,9 @@ psc_p = psc_up.getSubVector(ISs[0][1])
 
 vecmap_V.P2N(psc_u,gu.vec) 
 vecmap_mass.P2N(psc_p,gp.vec)
+
+print(comm.rank,'Vel',gu.vec)
+print(comm.rank,'Pre',gp.vec)
 
 # ux = 2*ng.sin(ng.pi*x)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)
 # uy = (-2)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)
