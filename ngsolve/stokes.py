@@ -43,7 +43,8 @@ if comm.rank == 0:
 
 stage_msh = psc.Log.Stage('Meshing')
 stage_ngs = psc.Log.Stage('Setting in NGS')
-stage_trf = psc.Log.Stage('Transfer ngs2petsc')
+stage_ass = psc.Log.Stage('Assembling in PETSc')
+stage_ISt = psc.Log.Stage('Re-indexing')
 stage_ksp = psc.Log.Stage('PETSc solver')
 
 # Generate Netgen mesh and distribute:
@@ -65,7 +66,8 @@ stage_msh.pop()
 
 # Standard mixed set-up in NGSolve (parallel)
 # FES: Taylor Hood P2-P1
-#TODO I might need to remove the order_fes option!
+stage_ngs.push()
+
 V = ng.VectorH1(mesh,order=order_fes+1,dirichlet="top|bottom|right|left") 
 Q = ng.H1(mesh,order=order_fes)
 
@@ -95,10 +97,12 @@ f.Assemble()
 g = ng.LinearForm(Q)
 g.Assemble()
 
-print('Free Dofs V', len(V.FreeDofs()), ' - ', V.FreeDofs())
-print('Free Dofs Q', len(Q.FreeDofs()), ' - ', Q.FreeDofs())
+stage_ngs.pop()
+# print('Free Dofs V', len(V.FreeDofs()), ' - ', V.FreeDofs())
+# print('Free Dofs Q', len(Q.FreeDofs()), ' - ', Q.FreeDofs())
 
 # Transport to PETSc
+stage_ISt.push()
 ## Recover Parallel DoFs
 pardof_vel = V.ParallelDofs()
 pardof_pre = Q.ParallelDofs()
@@ -116,9 +120,18 @@ vel_lgmap = psc.LGMap().createIS(vel_set)
 vel_freedof = np.flatnonzero(V.FreeDofs()).astype(psc.IntType)
 pre_freedof = np.flatnonzero(Q.FreeDofs()).astype(psc.IntType)
 
+# print('V', nglob_vel,'. Q', nglob_pre)
+# print('V', list(globalnums_vel), 'Q', list(globalnums_pre))
+
+stage_ISt.pop()
 ## V, with N2P
+stage_ass.push()
 a_psc = n2p.CreatePETScMatrix(a.mat, V.FreeDofs())
+stage_ass.pop()
+
+stage_ISt.push()
 vecmap_V = n2p.VectorMapping(a.mat.row_pardofs, V.FreeDofs())
+stage_ISt.pop()
 
 ## handmade
 # Local A mat NGSolve format
@@ -136,7 +149,11 @@ vecmap_V = n2p.VectorMapping(a.mat.row_pardofs, V.FreeDofs())
 
 ## Q, hand-made
 # Local B mat NGSolve format
+stage_ass.push()
 b_locmat = b.mat.local_mat
+stage_ass.pop()
+
+stage_ISt.push()
 eh, ew = b_locmat.entrysizes
 #IS Sets
 vel_islocfree = psc.IS().createBlock(indices=vel_freedof, bsize=eh)
@@ -145,8 +162,10 @@ pre_islocfree = psc.IS().createBlock(indices=pre_freedof, bsize=ew)
 b_val, b_col, b_ind = b_locmat.CSR()
 b_ind = np.array(b_ind).astype(psc.IntType)
 b_col = np.array(b_col).astype(psc.IntType)
+stage_ISt.pop()
 
 # Local B mat PETSc
+stage_ass.push()
 b_locmat_psc = psc.Mat().createAIJ(size=(eh*b_locmat.height, ew*b_locmat.width),
         csr=(b_ind,b_col,b_val), comm=MPI.COMM_SELF)
 b_locmat_psc = b_locmat_psc.createSubMatrices(pre_islocfree,iscols=vel_islocfree)[0]
@@ -167,20 +186,28 @@ bT_psc.assemble()
 
 ## PC for P
 mass_p_psc = n2p.CreatePETScMatrix(mass_p.mat, Q.FreeDofs())
+stage_ass.pop()
+stage_ISt.push()
 vecmap_mass = n2p.VectorMapping(mass_p.mat.row_pardofs, Q.FreeDofs())
+stage_ISt.pop()
 
 # Mat-Nest
+stage_ass.push()
 mats = [[a_psc,bT_psc],
         [b_psc,None]]
 
 psc_mat = psc.Mat().create().createNest(mats)
 psc_mat.assemble()
+stage_ass.pop()
 # Block size (1,1)
 
 # Define fields
+stage_ISt.push()
 ## Extract ISs from MatNest
 ISs = psc_mat.getNestISs()
+stage_ISt.pop()
 ## Define KSP
+stage_ksp.push()
 ksp = psc.KSP().create()
 ksp.setOperators(psc_mat)
 ## Get PC, setup PC
@@ -206,7 +233,7 @@ pc.setFieldSplitSchurPreType(psc.PC.SchurPreType.SELF)
 ksp.setTolerances(rtol=1e-14, atol=0, divtol=1e16, max_it=500)
 
 psc_mat.convert("mpiaij")
-psc_mat.view()
+# psc_mat.view()
 
 # Runtime options
 psc_mat.setFromOptions()
@@ -225,8 +252,10 @@ mass_p_psc.setUp()
 # THIS LINE CUDA
 pc.setUp()
 ksp.setUp()
+stage_ksp.pop()
 
 #TODO Solve
+stage_ISt.push()
 #TODO Grid Functions
 gu = ng.GridFunction(V, name="vel")
 gp = ng.GridFunction(Q, name="pre")
@@ -240,6 +269,9 @@ psc_g = vecmap_mass.N2P(g.vec)
 #psc_fg = psc.Vec().create().createNest([psc_f,psc_g])
 psc_fg, is_fg = psc_fg.concatenate([psc_f, psc_g])
 
+stage_ISt.pop()
+
+stage_ksp.push()
 psc_f.setFromOptions()
 psc_g.setFromOptions()
 psc_fg.setFromOptions()
@@ -251,16 +283,19 @@ psc_fg.setUp()
 psc_up.setUp()
 
 ksp.solve(psc_fg, psc_up)
+stage_ksp.pop()
 
+stage_ISt.push()
 psc_u = psc_up.getSubVector(ISs[0][0])
 psc_p = psc_up.getSubVector(ISs[0][1])
 
 vecmap_V.P2N(psc_u,gu.vec) 
 vecmap_mass.P2N(psc_p,gp.vec)
+stage_ISt.pop()
 
-print(comm.rank,'Vel',gu.vec)
-print(comm.rank,'Pre',gp.vec)
-
+# print(comm.rank,'Vel',gu.vec)
+# print(comm.rank,'Pre',gp.vec)
+stage_ngs.push()
 # ux = 2*ng.sin(ng.pi*x)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)
 # uy = (-2)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)
 cf_u = ng.CF( (2*ng.sin(ng.pi*x)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y),(-2)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)) )
@@ -272,3 +307,4 @@ error_pre = ng.Integrate((cf_p - gp)*(cf_p - gp), mesh)
 if comm.rank == 0:
     print('L2-error vel', ng.sqrt(error_vel))
     print('L2-error pre', ng.sqrt(error_pre))
+stage_ngs.pop()

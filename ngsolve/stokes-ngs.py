@@ -98,8 +98,8 @@ sol = ng.BlockVector( [gu.vec, gp.vec] )
 
 ng.solvers.MinRes( mat=K, pre=C, rhs=rhs, sol=sol, initialize=False)
 
-print(comm.rank,'Vel',gu.vec)
-print(comm.rank,'Pre',gp.vec)
+print(comm.rank,'Vel',gu.vec.size)
+print(comm.rank,'Pre',gp.vec.size)
 
 # ux = 2*ng.sin(ng.pi*x)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)
 # uy = (-2)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)
