@@ -11,20 +11,14 @@ from ngsolve.ngstd import Timer
 
 from tabulate import tabulate
 
-# Not sure if we requiere ngs2petsc
 import ngsolve.ngs2petsc as n2p
 
-########## --- --- ##########
-
-# Should be useful for runtime options without exporting PETSC_OPTIONS
 import sys
 comm = MPI.COMM_WORLD
 
-# Initialize PETSc 
 if comm.rank == 0:
     print('Initializing PETSc...')
 
-## PETSc Options
 opt = psc.Options()
 nref = opt.getInt('nref',1)
 hcoarse = opt.getReal('h',0.5)
@@ -35,23 +29,13 @@ if comm.rank == 0:
     print('hcoarse', hcoarse)
     print('ord', order_fes)
     print('--- End user-defined values ---')
-# sys.exit()
 
-## Define PETSC stages (Profiling)
 stage_msh = psc.Log.Stage('Meshing')
 stage_ngs = psc.Log.Stage('Setting in NGS')
 stage_trf = psc.Log.Stage('Transfer ngs2petsc')
 stage_ksp = psc.Log.Stage('PETSc solver')
 
-## Define ngstd-Timers (Profiling/timing)
-#TODO OBS PETSc stages take avr time among all ranks! Even if there is no use of PETSc
-#timer_msh = Timer('Meshing')
-#timer_ngs = Timer('Setting in NGS')
-#timer_trf = Timer('Transfer ngs2petsc')
-#timer_ksp = Timer('PETSc solver')
-
 # Generate Netgen mesh and distribute:
-#timer_msh.Start()
 stage_msh.push()
 
 comm.Barrier()
@@ -68,13 +52,8 @@ mesh=Mesh(ngmesh)
 comm.Barrier()
 
 stage_msh.pop()
-#timer_msh.Stop()
 
 # Standard mixed set-up in NGSolve (parallel)
-# #timer_ngs.Start()
-# stage_ngs.push()
-# stage_ngs.pop()
-# #timer_ngs.Stop()
 #### TODO Check notes. Check DoFs here!
 
 # FES: RT and Disc Pol

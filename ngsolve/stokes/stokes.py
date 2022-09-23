@@ -97,9 +97,15 @@ f.Assemble()
 g = ng.LinearForm(Q)
 g.Assemble()
 
+#TODO Grid Functions
+gu = ng.GridFunction(V, name="vel")
+gp = ng.GridFunction(Q, name="pre")
+
 stage_ngs.pop()
-# print('Free Dofs V', len(V.FreeDofs()), ' - ', V.FreeDofs())
-# print('Free Dofs Q', len(Q.FreeDofs()), ' - ', Q.FreeDofs())
+
+
+print(comm.rank,'-', V.FreeDofs())
+sys.exit()
 
 # Transport to PETSc
 stage_ISt.push()
@@ -116,9 +122,13 @@ pre_set = psc.IS().createGeneral(indices=globalnums_pre, comm=comm)
 vel_set = psc.IS().createGeneral(indices=globalnums_vel, comm=comm)
 pre_lgmap = psc.LGMap().createIS(pre_set)
 vel_lgmap = psc.LGMap().createIS(vel_set)
+### ngs2petsc.py - CreatePETScMatrix
 ## Free dofs
 vel_freedof = np.flatnonzero(V.FreeDofs()).astype(psc.IntType)
 pre_freedof = np.flatnonzero(Q.FreeDofs()).astype(psc.IntType)
+#IS Sets
+vel_islocfree = psc.IS().createBlock(indices=vel_freedof, bsize=eh)
+pre_islocfree = psc.IS().createBlock(indices=pre_freedof, bsize=ew)
 
 # print('V', nglob_vel,'. Q', nglob_pre)
 # print('V', list(globalnums_vel), 'Q', list(globalnums_pre))
@@ -155,10 +165,6 @@ stage_ass.pop()
 
 stage_ISt.push()
 eh, ew = b_locmat.entrysizes
-#IS Sets
-vel_islocfree = psc.IS().createBlock(indices=vel_freedof, bsize=eh)
-pre_islocfree = psc.IS().createBlock(indices=pre_freedof, bsize=ew)
-
 b_val, b_col, b_ind = b_locmat.CSR()
 b_ind = np.array(b_ind).astype(psc.IntType)
 b_col = np.array(b_col).astype(psc.IntType)
@@ -169,6 +175,12 @@ stage_ass.push()
 b_locmat_psc = psc.Mat().createAIJ(size=(eh*b_locmat.height, ew*b_locmat.width),
         csr=(b_ind,b_col,b_val), comm=MPI.COMM_SELF)
 b_locmat_psc = b_locmat_psc.createSubMatrices(pre_islocfree,iscols=vel_islocfree)[0]
+
+vel_pardof = b.mat.row_pardofs
+comm = vel_pardof.comm.mpi4py
+vel_globnums, vel_nglob = vel_pardof.EnumerateGlobally(V.FreeDofs())
+vel_globnums = np.array(vel_globnums,dtype=psc.IntType)[V.FreeDofs()]
+vel_lgmap = psc.LGMap().create(indices=vel_globnums, bsize=eh, comm=comm)
 
 b_psc = psc.Mat().createPython(size=[nglob_pre,nglob_vel], comm=comm)
 
@@ -256,9 +268,6 @@ stage_ksp.pop()
 
 #TODO Solve
 stage_ISt.push()
-#TODO Grid Functions
-gu = ng.GridFunction(V, name="vel")
-gp = ng.GridFunction(Q, name="pre")
 # TODO Create PETSc vectors
 
 psc_up, psc_fg = psc_mat.createVecs()

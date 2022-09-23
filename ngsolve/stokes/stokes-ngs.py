@@ -8,7 +8,7 @@ from mpi4py import MPI
 import numpy as np
 from netgen.geom2d import unit_square
 # from netgen.csg import unit_cube
-from ngsolve import Mesh, x, y, grad, dx, div
+from ngsolve import Mesh, x, y, grad, dx, div, ds
 from ngsolve.ngstd import Timer
 
 from tabulate import tabulate
@@ -18,9 +18,9 @@ import ngsolve.ngs2petsc as n2p
 import sys
 comm = MPI.COMM_WORLD
 
-nref = 0
-hcoarse = 0.5
-order_fes = 1
+nref = 2
+hcoarse = 0.1
+order_fes = 7
 flg_par = True
 
 if flg_par:
@@ -36,9 +36,10 @@ if flg_par:
 else:
     ngmesh = unit_square.GenerateMesh(maxh=hcoarse)
 mesh=Mesh(ngmesh)
+#print(mesh.GetBoundaries())
 comm.Barrier()
 
-V = ng.VectorH1(mesh,order=order_fes+1,dirichlet="top|bottom|right|left") 
+V = ng.VectorH1(mesh,order=order_fes+1,dirichlet="top|bottom|left") 
 Q = ng.H1(mesh,order=order_fes)
 
 u,v = V.TnT()
@@ -52,9 +53,14 @@ b = ng.BilinearForm(trialspace=V,testspace=Q)
 b += (-1)*div(u)*q*dx
 b.Assemble()
 
-print('Free Dofs V', len(V.FreeDofs()), ' - ', V.FreeDofs())
-print('Free Dofs Q', len(Q.FreeDofs()), ' - ', Q.FreeDofs())
-print('---')
+# Mass PC
+mass_p = ng.BilinearForm(Q)
+mass_p += p*q*dx
+mass_p.Assemble()
+
+#print('Free Dofs V', len(V.FreeDofs()), ' - ', V.FreeDofs())
+#print('Free Dofs Q', len(Q.FreeDofs()), ' - ', Q.FreeDofs())
+#print('---')
 
 if not flg_par:
     rows, cols, vals = a.mat.COO()
@@ -69,19 +75,17 @@ if not flg_par:
     savemat('tempA',{'A':A})
     savemat('tempB',{'B':B})
 
-
 #These are parallel matrices if using parallel mesh
-
-# Mass PC
-mass_p = ng.BilinearForm(Q)
-mass_p += p*q*dx
-mass_p.Assemble()
-
 #TODO Linear Forms
 # fx = 4*ng.pi*ng.pi*ng.sin(2*ng.pi*y)
 # fy = 4*ng.pi*ng.pi*ng.sin(2*ng.pi*x)*(-1 + 4*ng.cos(2*ng.pi*y))
+
+# Normal derivative on the bnd
+normal_u = ng.CF( (0, 2*ng.pi*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)) )
+
 f = ng.LinearForm(V)
 f += ng.CF((4*ng.pi*ng.pi*ng.sin(2*ng.pi*y),4*ng.pi*ng.pi*ng.sin(2*ng.pi*x)*(-1 + 4*ng.cos(2*ng.pi*y))))*v*dx
+f += normal_u*v*ds("right")
 f.Assemble()
 
 g = ng.LinearForm(Q)
@@ -89,6 +93,13 @@ g.Assemble()
 
 gu = ng.GridFunction(V, name="vel")
 gp = ng.GridFunction(Q, name="pre")
+
+# ux = 2*ng.sin(ng.pi*x)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)
+# uy = (-2)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)
+cf_u = ng.CF( (-2*ng.sin(ng.pi*x)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y),(-2)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)) )
+# p = 4*ng.pi*ng.sin(2*ng.pi*x)*sin(2*ng.pi*y)
+cf_p = ng.CF( 4*ng.pi*ng.sin(2*ng.pi*x)*ng.sin(2*ng.pi*y) ) 
+
 
 K = ng.BlockMatrix( [[a.mat, b.mat.T], [b.mat, None]] )
 C = ng.BlockMatrix( [[a.mat.Inverse(V.FreeDofs()), None], [None, mass_p.mat.Inverse()]] )
@@ -100,12 +111,6 @@ ng.solvers.MinRes( mat=K, pre=C, rhs=rhs, sol=sol, initialize=False)
 
 print(comm.rank,'Vel',gu.vec.size)
 print(comm.rank,'Pre',gp.vec.size)
-
-# ux = 2*ng.sin(ng.pi*x)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)
-# uy = (-2)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)
-cf_u = ng.CF( (2*ng.sin(ng.pi*x)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y),(-2)*ng.sin(ng.pi*x)*ng.sin(ng.pi*y)*ng.sin(ng.pi*y)) )
-# p = 4*ng.pi*ng.sin(2*ng.pi*x)*sin(2*ng.pi*y)
-cf_p = ng.CF( 4*ng.pi*ng.sin(2*ng.pi*x)*ng.sin(2*ng.pi*y) ) 
 
 error_vel = ng.Integrate(ng.InnerProduct(cf_u - gu,cf_u - gu), mesh)
 error_pre = ng.Integrate((cf_p - gp)*(cf_p - gp), mesh)
