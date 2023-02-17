@@ -21,6 +21,11 @@ set wildmenu
 set wildmode=list:longest
 set wildignore=*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx
 
+let g:vimtex_view_method = 'zathura'
+let g:vimtex_compiler_latexmk = {
+            \ 'options' : ['--shell-escape'],
+            \}
+
 " Pluggins "
 
 set rtp+=~/.vim/bundle/Vundle.vim
@@ -32,6 +37,16 @@ Plugin 'preservim/nerdtree'
 Plugin 'vim-syntastic/syntastic'
 Plugin 'vim-airline/vim-airline'
 Plugin 'ycm-core/YouCompleteMe'
+Plugin 'lervag/vimtex'
+Plugin 'tiagofumo/vim-nerdtree-syntax-highlight'
+Plugin 'dense-analysis/ale'
+Plugin 'mcchrish/nnn.vim'
+Plugin 'junegunn/fzf.vim'
 " call plug#end()
 call vundle#end()            
 filetype plugin indent on   
+
+" Config "
+let g:ale_linters={
+\ 'python': ['pylint'],
+\}

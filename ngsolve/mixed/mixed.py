@@ -11,18 +11,11 @@ from ngsolve.ngstd import Timer
 
 from tabulate import tabulate
 
-# Not sure if we requiere ngs2petsc
-# Yes, we do. Maybe this is worth a contribution!
 import ngsolve.ngs2petsc as n2p
 
-########## --- --- ##########
-
-# TODO 
-# Should be useful for runtime options without exporting PETSC_OPTIONS
 import sys
 comm = MPI.COMM_WORLD
 
-# Initialize PETSc 
 if comm.rank == 0:
     print('Initializing PETSc...')
 
@@ -63,38 +56,36 @@ else:
 mesh=Mesh(ngmesh)
 comm.Barrier()
 
+
 stage_msh.pop()
 
-# Standard mixed set-up in NGSolve (parallel)
-# FES: Taylor-Hood P2-P1
-V = ng.VectorH1(mesh,order=order_fes+1,dirichlet="top|bottom|right|left") 
-Q = ng.H1(mesh,order=order_fes)
+V = ng.HDiv(mesh,order=order_fes+1,RT=True) 
+Q = ng.L2(mesh,order=order_fes)
 
 u,v = V.TnT()
 p,q = Q.TnT()
 
 a = ng.BilinearForm(V)
-a += ng.InnerProduct(grad(u),grad(v))*dx
+a += ng.InnerProduct(u,v)*dx
 a.Assemble()
 
 b = ng.BilinearForm(trialspace=V,testspace=Q)
 b += div(u)*q*dx
 b.Assemble()
 
-# Mass PC
-mass_p = ng.BilinearForm(Q)
-mass_p += p*q*dx
-mass_p.Assemble()
-
-#TODO Linear Forms
-f = ng.LinearForm(V)
-f += ng.CF((0,x-0.5))*v*dx
+f = ng.LinearForm(Q)
+# f += 
 f.Assemble()
 
 g = ng.LinearForm(Q)
+g += ng.CF((0,x-0.5))*v*dx
 g.Assemble()
 
+gu = ng.GridFunction(V, name="grad")
+gq = ng.GridFunction(Q, name="solution")
+
 # Transport to PETSc
+eh, ew = b.mat.local_mat.entrysizes
 ## Recover Parallel DoFs
 pardof_vel = V.ParallelDofs()
 pardof_pre = Q.ParallelDofs()
@@ -111,6 +102,9 @@ vel_lgmap = psc.LGMap().createIS(vel_set)
 ## Free dofs
 vel_freedof = np.flatnonzero(V.FreeDofs()).astype(psc.IntType)
 pre_freedof = np.flatnonzero(Q.FreeDofs()).astype(psc.IntType)
+#IS Sets
+vel_islocfree = psc.IS().createBlock(indices=vel_freedof, bsize=eh)
+pre_islocfree = psc.IS().createBlock(indices=pre_freedof, bsize=ew)
 
 ## V, with N2P
 a_psc = n2p.CreatePETScMatrix(a.mat, V.FreeDofs())
@@ -133,10 +127,6 @@ vecmap_V = n2p.VectorMapping(a.mat.row_pardofs, V.FreeDofs())
 ## Q, hand-made
 # Local B mat NGSolve format
 b_locmat = b.mat.local_mat
-eh, ew = b_locmat.entrysizes
-#IS Sets
-vel_islocfree = psc.IS().createBlock(indices=vel_freedof, bsize=eh)
-pre_islocfree = psc.IS().createBlock(indices=pre_freedof, bsize=ew)
 
 b_val, b_col, b_ind = b_locmat.CSR()
 b_ind = np.array(b_ind).astype(psc.IntType)
@@ -147,7 +137,15 @@ b_locmat_psc = psc.Mat().createAIJ(size=(eh*b_locmat.height, ew*b_locmat.width),
         csr=(b_ind,b_col,b_val), comm=MPI.COMM_SELF)
 b_locmat_psc = b_locmat_psc.createSubMatrices(pre_islocfree,iscols=vel_islocfree)[0]
 
-b_psc = psc.Mat().createPython(size=[nglob_pre,nglob_vel], comm=comm)
+vel_pardof = b.mat.row_pardofs
+comm = vel_pardof.comm.mpi4py
+vel_globnums, vel_nglob = vel_pardof.EnumerateGlobally(V.FreeDofs())
+vel_globnums = np.array(vel_globnums,dtype=psc.IntType)[V.FreeDofs()]
+vel_lgmap = psc.LGMap().create(indices=vel_globnums, bsize=eh, comm=comm)
+
+#b_psc = psc.Mat().createPython(size=[nglob_pre,nglob_vel], comm=comm)
+b_psc = psc.Mat().create(comm=comm)
+b_psc.setSizes(size=[nglob_pre,nglob_vel],bsize=eh)
 
 b_psc.setType(psc.Mat.Type.IS)
 b_psc.setLGMap(pre_lgmap,cmap=vel_lgmap)
@@ -164,8 +162,8 @@ bT_psc.assemble()
 ####DEBUG
 
 ## PC for P
-mass_p_psc = n2p.CreatePETScMatrix(mass_p.mat, Q.FreeDofs())
-vecmap_mass = n2p.VectorMapping(mass_p.mat.row_pardofs, Q.FreeDofs())
+# mass_p_psc = n2p.CreatePETScMatrix(mass_p.mat, Q.FreeDofs())
+# vecmap_mass = n2p.VectorMapping(mass_p.mat.row_pardofs, Q.FreeDofs())
 
 # Mat-Nest
 mats = [[a_psc,bT_psc],
@@ -174,9 +172,10 @@ mats = [[a_psc,bT_psc],
 psc_mat = psc.Mat().create().createNest(mats)
 psc_mat.assemble()
 
-# Block size (1,1)
-# psc_mat.view()
-# print(psc_mat.getBlockSizes())
+# print(a_psc.getSize())
+# print(b_psc.getSize())
+# print(psc_mat.getSize())
+# sys.exit()
 
 # Define fields
 ## Extract ISs from MatNest
@@ -188,9 +187,14 @@ ksp.setOperators(psc_mat)
 pc = ksp.getPC()
 pc.setType("fieldsplit")
 pc.setFieldSplitIS(("vel",ISs[0][0]), ("pre",ISs[0][1]))
-pc.setFieldSplitType(5)
-pc.setFieldSplitSchurFactType(4)
-pc.setFieldSplitSchurPreType(1)
+pc.setFieldSplitType(psc.PC.CompositeType.SCHUR)
+pc.setFieldSplitSchurFactType(psc.PC.SchurFactType.FULL)
+pc.setFieldSplitSchurPreType(psc.PC.SchurPreType.SELF)
+## OPTIONS ARE
+#  ADDITIVE, MULTIPLICATIVE, SYMMETRIC_MULTIPLICATIVE, SPECIAL, SCHUR
+#  DIAG, LOWER, UPPER, FULL
+#  SELF, SELFP, A11, USER, FULL
+
 
 # ISs[0][0].view()
 # ISs[0][1].view()
@@ -206,12 +210,14 @@ pc.setFieldSplitSchurPreType(1)
 # Configure KSP & PC
 ksp.setTolerances(rtol=1e-14, atol=0, divtol=1e16, max_it=500)
 
+psc_mat.convert("mpiaij")
+
 # Runtime options
 psc_mat.setFromOptions()
 a_psc.setFromOptions()
 b_psc.setFromOptions()
 bT_psc.setFromOptions()
-mass_p_psc.setFromOptions()
+# mass_p_psc.setFromOptions()
 ksp.setFromOptions()
 pc.setFromOptions()
 
@@ -219,15 +225,11 @@ psc_mat.setUp()
 a_psc.setUp()
 b_psc.setUp()
 bT_psc.setUp()
-mass_p_psc.setUp()
+# mass_p_psc.setUp()
 # THIS LINE CUDA
 pc.setUp()
 ksp.setUp()
 
-#TODO Solve
-#TODO Grid Functions
-gu = ng.GridFunction(V, name="vel")
-gp = ng.GridFunction(Q, name="pre")
 # TODO Create PETSc vectors
 
 psc_up, psc_fg = psc_mat.createVecs()
@@ -236,7 +238,8 @@ psc_f = vecmap_V.N2P(f.vec)
 psc_g = vecmap_mass.N2P(g.vec)
 
 #psc_fg = psc.Vec().create().createNest([psc_f,psc_g])
-psc_fg.concatenate([psc_f, psc_g])
+#psc_fg.concatenate([psc_f, psc_g])
+psc_fg, is_fg = psc_fg.concatenate([psc_f, psc_g])
 
 psc_f.setFromOptions()
 psc_g.setFromOptions()
